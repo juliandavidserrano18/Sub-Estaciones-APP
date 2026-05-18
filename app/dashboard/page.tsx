@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Plus, FolderOpen, MoreVertical, Pencil, Trash2, LogOut } from 'lucide-react'
+import { Plus, FolderOpen, MoreVertical, Pencil, Trash2, LogOut, Download } from 'lucide-react'
 import Image from 'next/image'
+import JSZip from 'jszip'
 
 type Proyecto = {
   id: string
@@ -24,6 +25,7 @@ export default function Dashboard() {
   const [nuevoNombre, setNuevoNombre] = useState('')
   const [editandoId, setEditandoId] = useState<string | null>(null)
   const [editandoNombre, setEditandoNombre] = useState('')
+  const [descargandoId, setDescargandoId] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -54,6 +56,31 @@ export default function Dashboard() {
     await supabase.from('proyectos').update({ nombre: editandoNombre }).eq('id', id)
     setEditandoId(null)
     cargarProyectos()
+  }
+
+  const descargarProyecto = async (p: Proyecto) => {
+    setDescargandoId(p.id)
+    const { data: carpetas } = await supabase.from('carpetas').select('*').eq('proyecto_id', p.id)
+    if (!carpetas || carpetas.length === 0) { alert('El proyecto está vacío'); setDescargandoId(null); return }
+    const zip = new JSZip()
+    for (const carpeta of carpetas) {
+      const { data: archivos } = await supabase.from('archivos').select('*').eq('carpeta_id', carpeta.id)
+      if (!archivos || archivos.length === 0) continue
+      const folder = zip.folder(carpeta.nombre)!
+      for (const archivo of archivos) {
+        const res = await fetch(archivo.url)
+        const blob = await res.blob()
+        folder.file(archivo.nombre, blob)
+      }
+    }
+    const content = await zip.generateAsync({ type: 'blob' })
+    const url = URL.createObjectURL(content)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${p.nombre}.zip`
+    a.click()
+    URL.revokeObjectURL(url)
+    setDescargandoId(null)
   }
 
   const eliminarProyecto = async (id: string) => {
@@ -149,6 +176,10 @@ export default function Dashboard() {
                     <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                       <DropdownMenuItem onClick={() => { setEditandoId(p.id); setEditandoNombre(p.nombre) }}>
                         <Pencil className="w-4 h-4 mr-2" /> Renombrar
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => descargarProyecto(p)} disabled={descargandoId === p.id}>
+                        <Download className="w-4 h-4 mr-2" /> {descargandoId === p.id ? 'Descargando...' : 'Descargar todo'}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => eliminarProyecto(p.id)}>
