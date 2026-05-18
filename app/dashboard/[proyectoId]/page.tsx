@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Plus, Folder, MoreVertical, Pencil, Trash2, LogOut, ChevronRight } from 'lucide-react'
+import { Plus, Folder, MoreVertical, Pencil, Trash2, LogOut, ChevronRight, Download } from 'lucide-react'
 import Image from 'next/image'
+import JSZip from 'jszip'
 
 type Carpeta = { id: string; nombre: string; created_at: string }
 type Proyecto = { id: string; nombre: string }
@@ -21,6 +22,7 @@ export default function ProyectoPage() {
   const [nuevoNombre, setNuevoNombre] = useState('')
   const [editandoId, setEditandoId] = useState<string | null>(null)
   const [editandoNombre, setEditandoNombre] = useState('')
+  const [descargandoId, setDescargandoId] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -37,6 +39,26 @@ export default function ProyectoPage() {
     setProyecto(p)
     const { data: c } = await supabase.from('carpetas').select('*').eq('proyecto_id', proyectoId).order('created_at', { ascending: true })
     setCarpetas(c || [])
+  }
+
+  const descargarCarpeta = async (carpeta: Carpeta) => {
+    setDescargandoId(carpeta.id)
+    const { data: archivos } = await supabase.from('archivos').select('*').eq('carpeta_id', carpeta.id)
+    if (!archivos || archivos.length === 0) { alert('La carpeta está vacía'); setDescargandoId(null); return }
+    const zip = new JSZip()
+    for (const archivo of archivos) {
+      const res = await fetch(archivo.url)
+      const blob = await res.blob()
+      zip.file(archivo.nombre, blob)
+    }
+    const content = await zip.generateAsync({ type: 'blob' })
+    const url = URL.createObjectURL(content)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${carpeta.nombre}.zip`
+    a.click()
+    URL.revokeObjectURL(url)
+    setDescargandoId(null)
   }
 
   const crearCarpeta = async () => {
@@ -144,6 +166,9 @@ export default function ProyectoPage() {
                   <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenuItem onClick={() => { setEditandoId(c.id); setEditandoNombre(c.nombre) }}>
                       <Pencil className="w-4 h-4 mr-2" /> Renombrar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => descargarCarpeta(c)} disabled={descargandoId === c.id}>
+                      <Download className="w-4 h-4 mr-2" /> {descargandoId === c.id ? 'Descargando...' : 'Descargar todo'}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => eliminarCarpeta(c.id)}>
