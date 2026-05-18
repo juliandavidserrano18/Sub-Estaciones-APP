@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Upload, MoreVertical, Trash2, Download, Eye, FolderOpen, ChevronRight, LogOut, FileText, FileSpreadsheet, Presentation, File, Archive } from 'lucide-react'
+import { Upload, MoreVertical, Trash2, Download, Eye, FolderOpen, ChevronRight, LogOut, FileText, FileSpreadsheet, Presentation, File, Archive, Pencil } from 'lucide-react'
 import Image from 'next/image'
 
 type Archivo = { id: string; nombre: string; url: string; tipo: string; created_at: string }
@@ -68,6 +68,8 @@ export default function CarpetaPage() {
   const [subiendo, setSubiendo] = useState(false)
   const [inputKey, setInputKey] = useState(0)
   const [archivoSeleccionado, setArchivoSeleccionado] = useState<Archivo | null>(null)
+  const [renombrando, setRenombrando] = useState<Archivo | null>(null)
+  const [nuevoNombre, setNuevoNombre] = useState('')
 
   useEffect(() => {
     if (localStorage.getItem('auth') !== 'true') { router.push('/'); return }
@@ -96,6 +98,14 @@ export default function CarpetaPage() {
     }
     setSubiendo(false)
     setInputKey(k => k + 1)
+    cargarDatos()
+  }
+
+  const renombrarArchivo = async () => {
+    if (!renombrando || !nuevoNombre.trim()) { setRenombrando(null); return }
+    await supabase.from('archivos').update({ nombre: nuevoNombre.trim() }).eq('id', renombrando.id)
+    setRenombrando(null)
+    setNuevoNombre('')
     cargarDatos()
   }
 
@@ -195,18 +205,19 @@ export default function CarpetaPage() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                       {getVisorUrl(a) && (
-                        <>
-                          <DropdownMenuItem asChild>
-                            <a href={getVisorUrl(a)!.url} target="_blank" rel="noopener noreferrer">
-                              <Eye className="w-4 h-4 mr-2" /> {getVisorUrl(a)!.label}
-                            </a>
-                          </DropdownMenuItem>
-                        </>
+                        <DropdownMenuItem asChild>
+                          <a href={getVisorUrl(a)!.url} target="_blank" rel="noopener noreferrer">
+                            <Eye className="w-4 h-4 mr-2" /> {getVisorUrl(a)!.label}
+                          </a>
+                        </DropdownMenuItem>
                       )}
                       <DropdownMenuItem asChild>
                         <a href={a.url} download={a.nombre}>
                           <Download className="w-4 h-4 mr-2" /> Descargar
                         </a>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => { setRenombrando(a); setNuevoNombre(a.nombre) }}>
+                        <Pencil className="w-4 h-4 mr-2" /> Renombrar
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => eliminarArchivo(a.id, a.url)}>
@@ -248,6 +259,25 @@ export default function CarpetaPage() {
                 </a>
               </Button>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!renombrando} onOpenChange={() => setRenombrando(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Renombrar archivo</DialogTitle>
+          </DialogHeader>
+          <input
+            autoFocus
+            value={nuevoNombre}
+            onChange={(e) => setNuevoNombre(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') renombrarArchivo(); if (e.key === 'Escape') setRenombrando(null) }}
+            className="w-full border border-input rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+          <DialogFooter className="flex-col gap-2 sm:flex-row">
+            <Button variant="outline" className="w-full" onClick={() => setRenombrando(null)}>Cancelar</Button>
+            <Button className="w-full" onClick={renombrarArchivo}>Guardar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
