@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# archivos subidos por usuarios (van a Supabase, no al repo)
+public/*.xlsx
+public/*.xls
+public/*.csv
+public/*.pdf
+public/*.doc
+public/*.docx
+public/*.ppt
+public/*.pptx
+public/*.zip
+public/*.rar
