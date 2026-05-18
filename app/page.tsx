@@ -22,9 +22,11 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden" style={{background: 'linear-gradient(160deg, #0a1628 0%, #0f2040 50%, #0a1a2e 100%)'}}>
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
+      <div className="absolute inset-0" style={{backgroundImage: "url('/subestaciones-eléctricas(1).webp')", backgroundSize: 'cover', backgroundPosition: 'center'}} />
+      <div className="absolute inset-0 bg-black/55" />
 
-      <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+      <svg className="absolute inset-0 w-full h-full opacity-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
 
         {/* Suelo */}
         <rect x="0" y="820" width="1440" height="80" fill="#0d1f35" opacity="0.8"/>
