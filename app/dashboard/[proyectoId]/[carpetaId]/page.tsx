@@ -222,12 +222,17 @@ export default function CarpetaPage() {
       </main>
 
       <Dialog open={!!archivoSeleccionado} onOpenChange={() => setArchivoSeleccionado(null)}>
-        <DialogContent className="sm:max-w-sm">
+        <DialogContent className={archivoSeleccionado?.tipo?.startsWith('image/') ? "sm:max-w-2xl" : "sm:max-w-sm"}>
           <DialogHeader>
             <DialogTitle className="text-sm font-semibold line-clamp-2 pr-4">
               {archivoSeleccionado?.nombre}
             </DialogTitle>
           </DialogHeader>
+          {archivoSeleccionado?.tipo?.startsWith('image/') && (
+            <div className="w-full rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+              <img src={archivoSeleccionado.url} alt={archivoSeleccionado.nombre} className="max-h-[70vh] w-full object-contain" />
+            </div>
+          )}
           <DialogFooter className="flex-col gap-2 sm:flex-col">
             {archivoSeleccionado && getVisorUrl(archivoSeleccionado) && (
               <Button asChild className="w-full">
