@@ -98,15 +98,29 @@ export default function Dashboard() {
             <div className="w-px h-5 bg-border" />
             <span className="font-semibold text-foreground tracking-tight">Subestaciones</span>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => { localStorage.removeItem('auth'); router.push('/') }}
-            className="text-muted-foreground gap-2"
-          >
-            <LogOut className="w-4 h-4" />
-            Salir
-          </Button>
+          <div className="flex items-center gap-2">
+            <a
+              href="https://trello.com/b/dkdbWv43/mantenimiento-enitec-naves-2026"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button variant="outline" size="default" className="gap-2 text-sm font-medium px-4">
+                <svg className="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M21 0H3C1.343 0 0 1.343 0 3v18c0 1.657 1.343 3 3 3h18c1.657 0 3-1.343 3-3V3c0-1.657-1.343-3-3-3zM10.44 18.18c0 .795-.645 1.44-1.44 1.44H4.56c-.795 0-1.44-.645-1.44-1.44V5.82c0-.795.645-1.44 1.44-1.44H9c.795 0 1.44.645 1.44 1.44v12.36zm10.44-6c0 .795-.645 1.44-1.44 1.44H15c-.795 0-1.44-.645-1.44-1.44V5.82c0-.795.645-1.44 1.44-1.44h4.44c.795 0 1.44.645 1.44 1.44v6.36z"/>
+                </svg>
+                Trello Subestaciones
+              </Button>
+            </a>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => { localStorage.removeItem('auth'); router.push('/') }}
+              className="text-muted-foreground gap-2"
+            >
+              <LogOut className="w-4 h-4" />
+              Salir
+            </Button>
+          </div>
         </div>
       </header>
 
